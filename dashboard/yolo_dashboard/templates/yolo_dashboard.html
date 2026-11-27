@@ -1,0 +1,787 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f7ff">
+  <title>YOLO Vision | Warehouse Intelligence</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='12' fill='%23537cf5'/%3E%3Cpath d='M8 20c3.5-7.5 8-10.5 12-10.5s8.5 3 12 10.5c-3.5 7.5-8 10.5-12 10.5S11.5 27.5 8 20Z' fill='none' stroke='white' stroke-width='2.2'/%3E%3Ccircle cx='20' cy='20' r='3.6' fill='white'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('yolo_dashboard.static', filename='dashboard.css') }}">
+</head>
+<body>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+
+  <div class="app-shell" id="appShell">
+    <!-- Collapsible Left Navigation Sidebar -->
+    <aside class="sidebar" id="sidebar" aria-label="Primary navigation">
+      <div class="sidebar-top-row">
+        <a class="brand" href="#overview" data-view="overview" aria-label="YOLO Vision dashboard home">
+          <span class="brand-mark">
+            <svg viewBox="0 0 40 40" aria-hidden="true">
+              <path d="M5 20C9 10 15 6 20 6s11 4 15 14c-4 10-10 14-15 14S9 30 5 20Z"/>
+              <circle cx="20" cy="20" r="7"/>
+              <circle cx="20" cy="20" r="2.5"/>
+            </svg>
+          </span>
+          <span class="brand-copy"><strong>VisionOps</strong><small>YOLO ANALYTICS</small></span>
+        </a>
+        <button type="button" class="sidebar-toggle" id="sidebarToggleBtn" title="Toggle sidebar" aria-label="Collapse or expand sidebar" aria-expanded="true">
+          <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>
+        </button>
+      </div>
+
+      <div class="side-label">WORKSPACE</div>
+      <nav class="side-nav" id="sideNav" aria-label="Dashboard sections">
+        <button type="button" class="nav-link active" data-view="overview" title="Overview">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="5" rx="2"/><rect x="13" y="10" width="8" height="11" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/></svg>
+          <span class="nav-text">Overview</span>
+        </button>
+        <button type="button" class="nav-link" data-view="daily" title="Day Reports &amp; Compare">
+          <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4m8-4v4M3 10h18M8 14h3m2 0h3M8 17h3"/></svg>
+          <span class="nav-text">Day Reports</span>
+          <em class="nav-badge" id="navDaysBadge">—</em>
+        </button>
+        <button type="button" class="nav-link" data-view="people" title="People">
+          <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c.3-3.7 2.4-5.7 6-5.7s5.7 2 6 5.7M16 5.4a3.4 3.4 0 0 1 0 6.6m1.1 2.5c2.3.5 3.6 2.2 3.9 5.5"/></svg>
+          <span class="nav-text">People</span>
+          <em class="nav-badge" id="navPeopleBadge">—</em>
+        </button>
+        <button type="button" class="nav-link" data-view="vehicles" title="Vehicles">
+          <svg viewBox="0 0 24 24"><path d="m4 13 1.5-5h13L20 13v6H4zM6 13h12M7 19v2m10-2v2M7 16h.01M17 16h.01"/><path d="M7 8l1-3h8l1 3"/></svg>
+          <span class="nav-text">Vehicles</span>
+          <em class="nav-badge" id="navGateBadge">—</em>
+        </button>
+        <button type="button" class="nav-link" data-view="operations" title="Operations">
+          <svg viewBox="0 0 24 24"><path d="M4 21V5h16v16M4 9h16M8 5V3m8 2V3M8 13h3m2 0h3M8 17h3m2 0h3"/></svg>
+          <span class="nav-text">Operations</span>
+          <em class="nav-badge" id="navOpsBadge">—</em>
+        </button>
+      </nav>
+    </aside>
+
+    <!-- Main Single-Page Static Workspace -->
+    <main class="main-content" id="mainContent">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open navigation menu">
+            <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+          </button>
+          <div class="breadcrumb">
+            Workspace <span>/</span> <b id="activeViewCrumb">Overview</b>
+          </div>
+        </div>
+        <div class="top-actions">
+          <span class="snapshot-pill"><i></i> CSV Snapshot</span>
+          <div class="period-pill">
+            <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 10h18"/></svg>
+            <strong id="periodText">Loading…</strong>
+          </div>
+          <button class="icon-button" id="refreshBtn" title="Refresh dashboard" aria-label="Refresh dashboard">
+            <svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.8-3L3 11m0-5v5h5M4 13a8 8 0 0 0 14.8 3L21 13m0 5v-5h-5"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Static Caution Banner (no close button) -->
+      <div class="caution-banner" id="cautionBanner" role="note" aria-label="Data quality caution">
+        <span class="banner-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 8v4m0 4h.01M10.3 3.8 2.9 17a2 2 0 0 0 1.8 3h14.6a2 2 0 0 0 1.8-3l-7.4-13.2a2 2 0 0 0-3.4 0Z"/></svg>
+        </span>
+        <div class="caution-copy">
+          <strong>Caution:</strong>
+          <span id="cautionText">Due to low visual quality, vehicle number plates cannot be tracked reliably, and the same vehicle cannot be uniquely identified across multiple camera views.</span>
+        </div>
+      </div>
+
+      <!-- VIEW 1: OVERVIEW -->
+      <section class="view-pane active" data-view-panel="overview">
+        <div class="view-head">
+          <div>
+            <div class="eyebrow"><span class="eyebrow-line"></span> OPERATIONS INTELLIGENCE</div>
+            <h1>Warehouse overview<span>.</span></h1>
+            <p>Click any KPI card to inspect its detailed chart and operational table.</p>
+          </div>
+          <button type="button" class="view-jump-btn" data-view="daily">
+            <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4m8-4v4M3 10h18"/></svg>
+            <span>Day Reports</span>
+          </button>
+        </div>
+
+        <section class="kpi-grid" aria-label="Key performance indicators">
+          <article class="kpi-card tint-blue" data-kpi="people" role="button" tabindex="0">
+            <div class="kpi-top">
+              <span class="kpi-icon"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.4"/><path d="M2.8 20c.3-3.7 2.5-5.6 6.2-5.6s5.9 1.9 6.2 5.6M16 5.2a3.4 3.4 0 0 1 0 6.6m1 2.7c2.5.4 3.9 2.2 4.2 5.5"/></svg></span>
+              <span class="kpi-tag">PEOPLE <em class="kpi-drill-hint">Details ↗</em></span>
+            </div>
+            <div class="kpi-main">
+              <div>
+                <div class="kpi-value" id="kpiPeople">—</div>
+                <div class="kpi-label">People tracking records</div>
+              </div>
+              <div class="kpi-visual" id="visPeopleSpark" aria-hidden="true"></div>
+            </div>
+            <div class="kpi-foot"><span class="foot-dot blue"></span><span id="kpiPeopleFoot">Tracking rows, not unique people</span></div>
+          </article>
+
+          <article class="kpi-card tint-cyan" data-kpi="multi_cam" role="button" tabindex="0">
+            <div class="kpi-top">
+              <span class="kpi-icon"><svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="3"/><circle cx="18" cy="7" r="3"/><circle cx="18" cy="17" r="3"/><path d="M8.8 10.9 15.2 8.1M8.8 13.1l6.4 2.8"/></svg></span>
+              <span class="kpi-tag">CROSS-ZONE <em class="kpi-drill-hint">Details ↗</em></span>
+            </div>
+            <div class="kpi-main">
+              <div>
+                <div class="kpi-value" id="kpiMultiCam">—</div>
+                <div class="kpi-label">Multi-camera tracks</div>
+              </div>
+              <div class="kpi-visual" id="visMultiCamRing" aria-hidden="true"></div>
+            </div>
+            <div class="kpi-foot"><span class="foot-dot cyan"></span><span id="kpiMultiCamFoot">Visited 2+ camera zones</span></div>
+          </article>
+
+          <article class="kpi-card tint-violet" data-kpi="carried" role="button" tabindex="0">
+            <div class="kpi-top">
+              <span class="kpi-icon"><svg viewBox="0 0 24 24"><rect x="6" y="7" width="12" height="13" rx="3"/><path d="M9 7V5a3 3 0 0 1 6 0v2M9 12h6"/></svg></span>
+              <span class="kpi-tag">CARRIED ITEMS <em class="kpi-drill-hint">Details ↗</em></span>
+            </div>
+            <div class="kpi-main">
+              <div>
+                <div class="kpi-value" id="kpiCarried">—</div>
+                <div class="kpi-label">Tracks with bags/cases</div>
+              </div>
+              <div class="kpi-visual" id="visCarriedRing" aria-hidden="true"></div>
+            </div>
+            <div class="kpi-foot"><span class="foot-dot violet"></span><span id="kpiCarriedFoot">Backpack, bag or case flagged</span></div>
+          </article>
+
+          <article class="kpi-card tint-orange" data-kpi="peak_hour" role="button" tabindex="0">
+            <div class="kpi-top">
+              <span class="kpi-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+              <span class="kpi-tag">PEAK WINDOW <em class="kpi-drill-hint">Details ↗</em></span>
+            </div>
+            <div class="kpi-main">
+              <div>
+                <div class="kpi-value kpi-value-sm" id="kpiPeakHour">—</div>
+                <div class="kpi-label">Busiest people hour</div>
+              </div>
+              <div class="kpi-visual" id="visPeakHourBars" aria-hidden="true"></div>
+            </div>
+            <div class="kpi-foot"><span class="foot-dot orange"></span><span id="kpiPeakHourFoot">Highest hourly track volume</span></div>
+          </article>
+
+          <article class="kpi-card tint-green" data-kpi="gate_entries" role="button" tabindex="0">
+            <div class="kpi-top">
+              <span class="kpi-icon"><svg viewBox="0 0 24 24"><path d="M4 17V7m0 10h16M7 14l4-4 3 2 5-6"/><path d="M15 6h4v4"/></svg></span>
+              <span class="kpi-tag">GATE IN <em class="kpi-drill-hint">Details ↗</em></span>
+            </div>
+            <div class="kpi-main">
+              <div>
+                <div class="kpi-value" id="kpiEntries">—</div>
+                <div class="kpi-label">Vehicle entry events</div>
+              </div>
+              <div class="kpi-visual" id="visEntryRing" aria-hidden="true"></div>
+            </div>
+            <div class="kpi-foot"><span class="foot-dot green"></span><span id="kpiEntriesFoot">Inward crossings at main gate</span></div>
+          </article>
+
+          <article class="kpi-card tint-pink" data-kpi="gate_exits" role="button" tabindex="0">
+            <div class="kpi-top">
+              <span class="kpi-icon"><svg viewBox="0 0 24 24"><path d="M20 7v10m0-10H4m16 0-4 4m4-4-4-4M4 17h16m-16 0 4-4m-4 4 4 4"/></svg></span>
+              <span class="kpi-tag">GATE OUT <em class="kpi-drill-hint">Details ↗</em></span>
+            </div>
+            <div class="kpi-main">
+              <div>
+                <div class="kpi-value" id="kpiExits">—</div>
+                <div class="kpi-label">Vehicle exit events</div>
+              </div>
+              <div class="kpi-visual" id="visExitRing" aria-hidden="true"></div>
+            </div>
+            <div class="kpi-foot"><span class="foot-dot pink"></span><span id="kpiExitsFoot">Event diff (not live balance)</span></div>
+          </article>
+
+          <article class="kpi-card tint-blue" data-kpi="docked" role="button" tabindex="0">
+            <div class="kpi-top">
+              <span class="kpi-icon"><svg viewBox="0 0 24 24"><path d="M3 20V5h18v15M3 10h18M7 5V3m10 2V3M7 14h4m2 0h4m-10 3h4m2 0h4"/></svg></span>
+              <span class="kpi-tag">DOCKING <em class="kpi-drill-hint">Details ↗</em></span>
+            </div>
+            <div class="kpi-main">
+              <div>
+                <div class="kpi-value" id="kpiDocked">—</div>
+                <div class="kpi-label">Vehicles docked</div>
+              </div>
+              <div class="kpi-visual" id="visDockedRing" aria-hidden="true"></div>
+            </div>
+            <div class="kpi-foot"><span class="foot-dot blue"></span><span id="kpiDockedFoot">Share of warehouse records</span></div>
+          </article>
+
+          <article class="kpi-card tint-teal" data-kpi="parking" role="button" tabindex="0">
+            <div class="kpi-top">
+              <span class="kpi-icon"><svg viewBox="0 0 24 24"><path d="M4 18h16M6 18V9h12v9M8 9V6h8v3M8 13h3m2 0h3"/></svg></span>
+              <span class="kpi-tag">PARKING <em class="kpi-drill-hint">Details ↗</em></span>
+            </div>
+            <div class="kpi-main">
+              <div>
+                <div class="kpi-value" id="kpiParking">—</div>
+                <div class="kpi-label">Parking-state records</div>
+              </div>
+              <div class="kpi-visual" id="visParkingRing" aria-hidden="true"></div>
+            </div>
+            <div class="kpi-foot"><span class="foot-dot teal"></span><span id="kpiParkingFoot">In parking + parked records</span></div>
+          </article>
+
+          <article class="kpi-card tint-orange" data-kpi="phone" role="button" tabindex="0">
+            <div class="kpi-top">
+              <span class="kpi-icon"><svg viewBox="0 0 24 24"><rect x="7" y="2.8" width="10" height="18.4" rx="2.4"/><path d="M10.5 5.8h3M11.5 18.2h1"/></svg></span>
+              <span class="kpi-tag">PHONE USAGE <em class="kpi-drill-hint">Details ↗</em></span>
+            </div>
+            <div class="kpi-main">
+              <div>
+                <div class="kpi-value" id="kpiPhone">—</div>
+                <div class="kpi-label">Mobile phone usage</div>
+              </div>
+              <div class="kpi-visual" id="visPhoneSignal" aria-hidden="true"></div>
+            </div>
+            <div class="kpi-foot"><span class="foot-dot orange"></span><span id="kpiPhoneFoot">Tracks flagged holding a phone</span></div>
+          </article>
+        </section>
+
+        <section class="content-grid">
+          <article class="panel chart-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-kicker">PEOPLE TREND</span>
+                <h2>Daily people tracking records</h2>
+                <p>Hover points to inspect daily counts</p>
+              </div>
+              <span class="panel-chip" id="peakDayChip"><i class="chip-dot blue"></i>Peak: —</span>
+            </div>
+            <div class="chart-wrap" id="peopleChart"><div class="chart-loading">Loading chart…</div></div>
+          </article>
+
+          <article class="panel chart-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-kicker">GATE FLOW</span>
+                <h2>Entries vs exits by day</h2>
+                <p>Event-count difference is not a live yard balance</p>
+              </div>
+              <span class="chart-legend"><i class="legend-entry"></i>In <i class="legend-exit"></i>Out</span>
+            </div>
+            <div class="chart-wrap compact-chart" id="gateChart"><div class="chart-loading">Loading chart…</div></div>
+            <div class="flow-summary">
+              <div><small>Entries</small><b id="flowEntries">—</b></div>
+              <div><small>Exits</small><b id="flowExits">—</b></div>
+              <div><small>Event diff</small><b id="flowDiff">—</b></div>
+            </div>
+          </article>
+        </section>
+
+        <section class="content-grid three-col-grid">
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-kicker">WAREHOUSE DONUT</span>
+                <h2>Vehicle state share</h2>
+                <p>Proportional visual across all states</p>
+              </div>
+              <span class="total-chip" id="warehouseTotal">— records</span>
+            </div>
+            <div class="donut-layout" id="warehouseDonutWrap"></div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-kicker">SHUTTER ACTIVITY</span>
+                <h2>Loading-shutter usage</h2>
+                <p>Assigned bay records (Shutter 1–6)</p>
+              </div>
+              <span class="total-chip" id="shutterTotalChip">— assigned</span>
+            </div>
+            <div class="shutter-list" id="shutterListOverview"></div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-kicker">ZONE COVERAGE</span>
+                <h2>Camera entry points</h2>
+                <p>Share of tracks started per camera</p>
+              </div>
+            </div>
+            <div class="donut-layout" id="cameraDonutWrap"></div>
+          </article>
+        </section>
+      </section>
+
+      <!-- VIEW 2: DAY REPORTS (SINGLE DAY REPORT + COMPARE TWO DATES) -->
+      <section class="view-pane" data-view-panel="daily">
+        <div class="view-head">
+          <div>
+            <div class="eyebrow"><span class="eyebrow-line"></span> DAY-WISE ANALYTICS</div>
+            <h1>Daily reports &amp; date comparison<span>.</span></h1>
+            <p>View a full report for any single date or compare two different dates side by side.</p>
+          </div>
+          <div class="mode-tabs" id="dailyModeTabs" role="tablist" aria-label="Daily report mode">
+            <button type="button" class="mode-tab active" data-daily-mode="single" role="tab" aria-selected="true">Single Day Report</button>
+            <button type="button" class="mode-tab" data-daily-mode="compare" role="tab" aria-selected="false">Compare Two Dates</button>
+          </div>
+        </div>
+
+        <!-- MODE A: SINGLE DAY REPORT -->
+        <div class="daily-subpane active" id="singleDayPane">
+          <div class="panel single-day-bar">
+            <div class="single-select-wrap">
+              <label for="singleDaySelect">Select Date</label>
+              <select id="singleDaySelect" class="day-select"></select>
+            </div>
+            <div class="date-pills" id="singleDatePills" aria-label="Quick date selection"></div>
+          </div>
+
+          <section class="compare-kpi-grid" id="singleDayKpis"></section>
+
+          <section class="content-grid equal-grid">
+            <article class="panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="section-kicker">HOURLY PEOPLE TRAFFIC</span>
+                  <h2 id="singlePeopleChartTitle">People records by hour</h2>
+                  <p>24-hour distribution for the selected date</p>
+                </div>
+                <span class="panel-chip" id="singlePeakHourChip"><i class="chip-dot blue"></i>Peak: —</span>
+              </div>
+              <div class="chart-wrap" id="singlePeopleHourlyChart"></div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="section-kicker">HOURLY GATE CROSSINGS</span>
+                  <h2 id="singleGateChartTitle">Gate entries vs exits by hour</h2>
+                  <p>Hourly vehicle crossings on the selected date</p>
+                </div>
+                <span class="chart-legend"><i class="legend-entry"></i>In <i class="legend-exit"></i>Out</span>
+              </div>
+              <div class="chart-wrap" id="singleGateHourlyChart"></div>
+            </article>
+          </section>
+
+          <section class="content-grid equal-grid">
+            <article class="panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="section-kicker">DAILY ACTIVITIES</span>
+                  <h2 id="singleActTitle">Top activities on selected date</h2>
+                  <p>Most frequent detected people actions</p>
+                </div>
+              </div>
+              <div class="status-list" id="singleDayActivities"></div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="section-kicker">GATE VEHICLE MIX</span>
+                  <h2 id="singleFleetTitle">Vehicle types on selected date</h2>
+                  <p>Classified gate crossings for the selected date</p>
+                </div>
+              </div>
+              <div class="status-list" id="singleDayGateTypes"></div>
+            </article>
+          </section>
+
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-kicker">HOURLY TABLE</span>
+                <h2 id="singleTableTitle">Hour-by-hour activity table</h2>
+                <p>Hours with recorded people or gate events on the selected date</p>
+              </div>
+            </div>
+            <div class="table-scroll" id="singleDayTableWrap"></div>
+          </article>
+        </div>
+
+        <!-- MODE B: COMPARE TWO DATES (No "Day A / Day B" labels; actual dates; prevents same-date selection) -->
+        <div class="daily-subpane" id="compareDatesPane">
+          <div class="panel compare-bar">
+            <div class="compare-select-group">
+              <label for="dayASelect"><span class="cmp-dot cmp-a"></span> First Date</label>
+              <select id="dayASelect" class="day-select"></select>
+            </div>
+            <div class="compare-vs" aria-hidden="true">VS</div>
+            <div class="compare-select-group">
+              <label for="dayBSelect"><span class="cmp-dot cmp-b"></span> Second Date</label>
+              <select id="dayBSelect" class="day-select"></select>
+            </div>
+          </div>
+
+          <section class="compare-kpi-grid" id="compareDeltaGrid"></section>
+
+          <section class="content-grid equal-grid">
+            <article class="panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="section-kicker">HOURLY COMPARISON</span>
+                  <h2 id="compareHourlyTitle">Hourly people traffic</h2>
+                  <p>24-hour overlay between the two selected dates</p>
+                </div>
+                <span class="chart-legend"><i class="legend-entry"></i><em id="cmpLegendA">—</em> <i class="legend-b"></i><em id="cmpLegendB">—</em></span>
+              </div>
+              <div class="chart-wrap" id="compareHourlyChart"></div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="section-kicker">METRIC COMPARISON</span>
+                  <h2 id="compareBarsTitle">Key counts side by side</h2>
+                  <p>Direct volume comparison across both dates</p>
+                </div>
+                <span class="chart-legend"><i class="legend-entry"></i><em id="cmpBarLegendA">—</em> <i class="legend-b"></i><em id="cmpBarLegendB">—</em></span>
+              </div>
+              <div class="compare-bars-wrap" id="compareMetricBars"></div>
+            </article>
+          </section>
+
+          <section class="content-grid">
+            <article class="panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="section-kicker">ALL DATES AT A GLANCE</span>
+                  <h2>7-Day summary matrix</h2>
+                  <p>Click any date row to set it as the First Date</p>
+                </div>
+              </div>
+              <div class="day-matrix" id="dayMatrix"></div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="section-kicker">DAILY ACTIVITIES</span>
+                  <h2>Top actions on selected dates</h2>
+                  <p>Compare dominant activities between both dates</p>
+                </div>
+              </div>
+              <div class="side-by-side-acts" id="compareActivities"></div>
+            </article>
+          </section>
+        </div>
+      </section>
+
+      <!-- VIEW 3: PEOPLE MOVEMENT -->
+      <section class="view-pane" data-view-panel="people">
+        <div class="view-head">
+          <div>
+            <div class="eyebrow"><span class="eyebrow-line"></span> PEOPLE ANALYTICS</div>
+            <h1>People movement &amp; zones<span>.</span></h1>
+            <p>Hourly traffic waves, camera entry points, carried items, and detected activities.</p>
+          </div>
+        </div>
+
+        <section class="content-grid equal-grid">
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-kicker">24-HOUR HEATWAVE</span>
+                <h2>People records by hour of day</h2>
+                <p>Highlights peak facility foot-traffic hours</p>
+              </div>
+              <span class="panel-chip" id="peopleHourlyPeakChip"><i class="chip-dot blue"></i>Peak: —</span>
+            </div>
+            <div class="chart-wrap" id="peopleHourlyChart"></div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-kicker">DETECTED ACTIONS</span>
+                <h2>Most common people activities</h2>
+                <p>Plain-English labels from camera detections</p>
+              </div>
+            </div>
+            <div class="activity-list" id="activityList"></div>
+          </article>
+        </section>
+
+        <section class="content-grid equal-grid">
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-kicker">CAMERA ENTRY</span>
+                <h2>First-seen camera distribution</h2>
+                <p>Where tracking records begin</p>
+              </div>
+            </div>
+            <div class="status-list" id="entryCamList"></div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-kicker">CARRIED ITEMS</span>
+                <h2>Detected bags &amp; gear</h2>
+                <p>Breakdown across records with carried items</p>
+              </div>
+              <span class="total-chip" id="carriedTotalChip">— tracks</span>
+            </div>
+            <div class="status-list" id="carriedList"></div>
+          </article>
+        </section>
+      </section>
+
+      <!-- VIEW 4: VEHICLES & GATE -->
+      <section class="view-pane" data-view-panel="vehicles">
+        <div class="view-head">
+          <div>
+            <div class="eyebrow"><span class="eyebrow-line"></span> GATE &amp; FLEET</div>
+            <h1>Vehicle crossings &amp; plate quality<span>.</span></h1>
+            <p>Hourly gate entries vs exits, vehicle mix, and ANPR readability status.</p>
+          </div>
+        </div>
+
+        <section class="content-grid equal-grid">
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-kicker">24-HOUR GATE PULSE</span>
+                <h2>Gate crossings by hour</h2>
+                <p>Combined inward and outward crossing events</p>
+              </div>
+              <span class="panel-chip" id="gateHourlyPeakChip"><i class="chip-dot blue"></i>Peak: —</span>
+            </div>
+            <div class="chart-wrap" id="gateHourlyChart"></div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-kicker">FLEET MIX</span>
+                <h2>Gate vehicle types</h2>
+                <p>Classified vehicle categories at CH2 main gate</p>
+              </div>
+            </div>
+            <div class="donut-layout" id="gateFleetDonutWrap"></div>
+          </article>
+        </section>
+
+        <section class="content-grid equal-grid">
+          <article class="panel insight-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-kicker">DATA QUALITY</span>
+                <h2>Number plate readings</h2>
+                <p>Honest audit across gate and warehouse scans</p>
+              </div>
+              <span class="quality-icon"><svg viewBox="0 0 24 24"><path d="M4 7h16v10H4zM7 10h10m-10 4h4m3 0h3"/></svg></span>
+            </div>
+            <div class="quality-stat"><strong id="plateReadable">—</strong><span>readable gate plates</span></div>
+            <div class="quality-bar"><span id="plateBar"></span></div>
+            <p class="quality-note" id="plateNote">Checking plate data…</p>
+            <div class="insight-divider"></div>
+            <div class="insight-callout">
+              <span class="callout-icon"><svg viewBox="0 0 24 24"><path d="M12 3v3m0 12v3M3 12h3m12 0h3"/><circle cx="12" cy="12" r="6"/></svg></span>
+              <div><b>Vehicle stay duration omitted</b><p>Most warehouse vehicle rows report 0.0s duration, so average vehicle dwell time is intentionally not shown.</p></div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-kicker">YARD FLEET</span>
+                <h2>Warehouse vehicle types</h2>
+                <p>Distribution across 1,533 vehicle-state records</p>
+              </div>
+            </div>
+            <div class="status-list" id="warehouseTypeList"></div>
+          </article>
+        </section>
+      </section>
+
+      <!-- VIEW 5: OPERATIONS & SHUTTERS -->
+      <section class="view-pane" data-view-panel="operations">
+        <div class="view-head">
+          <div>
+            <div class="eyebrow"><span class="eyebrow-line"></span> DOCK OPERATIONS</div>
+            <h1>Loading shutters &amp; yard states<span>.</span></h1>
+            <p>Bay-by-bay shutter activity, status shares, and snapshot source notes.</p>
+          </div>
+        </div>
+
+        <section class="panel shutter-bay-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="section-kicker">LOADING BAYS</span>
+              <h2>Shutter 1 – Shutter 6 activity</h2>
+              <p id="shutterUnassignedNote">Loading unassigned count…</p>
+            </div>
+            <span class="total-chip" id="shutterAssignedBadge">— assigned</span>
+          </div>
+          <div class="bay-grid" id="bayGrid"></div>
+        </section>
+
+        <section class="content-grid equal-grid">
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-kicker">STATE BREAKDOWN</span>
+                <h2>All warehouse vehicle states</h2>
+                <p>State records (not proof of unique vehicles)</p>
+              </div>
+            </div>
+            <div class="status-list" id="statusListOps"></div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-kicker">SNAPSHOT INTEGRITY</span>
+                <h2>Metric &amp; source rules</h2>
+                <p>How these numbers should be read</p>
+              </div>
+            </div>
+            <ul class="notes-list" id="notesList"></ul>
+          </article>
+        </section>
+      </section>
+
+      <footer class="page-footer">
+        <span>YOLO Warehouse Operations</span>
+        <span id="lastUpdated">Waiting for data</span>
+      </footer>
+    </main>
+  </div>
+
+  <!-- KPI Drill-Down Modal (Visual + Informative Table) -->
+  <div class="kpi-modal-backdrop" id="kpiModalBackdrop" aria-hidden="true">
+    <div class="kpi-modal" id="kpiModal" role="dialog" aria-modal="true" aria-labelledby="kpiModalTitle">
+      <div class="kpi-modal-head">
+        <div>
+          <span class="section-kicker" id="kpiModalKicker">KPI DETAILS</span>
+          <h2 id="kpiModalTitle">Metric Details</h2>
+          <p id="kpiModalSubtitle">—</p>
+        </div>
+        <div class="kpi-modal-head-right">
+          <span class="kpi-modal-figure" id="kpiModalFigure">—</span>
+          <button type="button" class="close-ai-btn" id="closeKpiModalBtn" aria-label="Close details">×</button>
+        </div>
+      </div>
+      <div class="kpi-modal-body">
+        <section class="kpi-modal-section">
+          <h3 class="modal-subhead">Visual Breakdown</h3>
+          <div class="kpi-modal-visual" id="kpiModalVisual"></div>
+        </section>
+        <section class="kpi-modal-section">
+          <h3 class="modal-subhead" id="kpiModalTableTitle">Detailed Records</h3>
+          <div class="table-scroll" id="kpiModalTableWrap"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right-Side Floating Animated Robot Trigger -->
+  <button type="button" class="ai-fab" id="aiTriggerBtn" aria-label="Open AI Operations Assistant" aria-expanded="false" aria-controls="aiDrawer">
+    <span class="ai-fab-pulse" aria-hidden="true"></span>
+    <span class="robot-stage robot-fab-stage" id="robotFabStage">
+      <svg class="robot-svg" viewBox="0 0 64 64" aria-hidden="true">
+        <defs>
+          <linearGradient id="botBodyFab" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#6b91ff"/>
+            <stop offset="100%" stop-color="#4e70e8"/>
+          </linearGradient>
+          <linearGradient id="botVisorFab" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#17243c"/>
+            <stop offset="100%" stop-color="#273a5e"/>
+          </linearGradient>
+        </defs>
+        <line x1="32" y1="14" x2="32" y2="7" stroke="#6b91ff" stroke-width="2.5" stroke-linecap="round"/>
+        <circle class="robot-antenna-tip" cx="32" cy="6" r="3.2" fill="#43c998"/>
+        <rect x="8" y="27" width="5" height="12" rx="2.5" fill="#9db6ff"/>
+        <rect x="51" y="27" width="5" height="12" rx="2.5" fill="#9db6ff"/>
+        <rect class="robot-head" x="12" y="15" width="40" height="32" rx="13" fill="url(#botBodyFab)"/>
+        <rect x="17" y="22" width="30" height="16" rx="7" fill="url(#botVisorFab)"/>
+        <circle class="robot-eye left" cx="26" cy="30" r="2.8" fill="#67e8f9"/>
+        <circle class="robot-eye right" cx="38" cy="30" r="2.8" fill="#67e8f9"/>
+        <path class="robot-mouth" d="M27 35.5c1.6 1.2 8.4 1.2 10 0" fill="none" stroke="#93c5fd" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+    </span>
+    <span class="ai-fab-label">Ask AI</span>
+  </button>
+
+  <!-- Animated Slide-Over AI Assistant Drawer (closes on outside click) -->
+  <aside class="ai-drawer" id="aiDrawer" aria-label="Operations AI Assistant" aria-hidden="true">
+    <div class="assistant-head">
+      <div class="robot-stage" id="robotStage" title="AI Assistant">
+        <svg class="robot-svg" viewBox="0 0 64 64" aria-hidden="true">
+          <defs>
+            <linearGradient id="botBody" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#6b91ff"/>
+              <stop offset="100%" stop-color="#4e70e8"/>
+            </linearGradient>
+            <linearGradient id="botVisor" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#17243c"/>
+              <stop offset="100%" stop-color="#273a5e"/>
+            </linearGradient>
+          </defs>
+          <line x1="32" y1="14" x2="32" y2="7" stroke="#6b91ff" stroke-width="2.5" stroke-linecap="round"/>
+          <circle class="robot-antenna-tip" cx="32" cy="6" r="3.2" fill="#43c998"/>
+          <rect x="8" y="27" width="5" height="12" rx="2.5" fill="#9db6ff"/>
+          <rect x="51" y="27" width="5" height="12" rx="2.5" fill="#9db6ff"/>
+          <rect class="robot-head" x="12" y="15" width="40" height="32" rx="13" fill="url(#botBody)"/>
+          <rect x="17" y="22" width="30" height="16" rx="7" fill="url(#botVisor)"/>
+          <circle class="robot-eye left" cx="26" cy="30" r="2.8" fill="#67e8f9"/>
+          <circle class="robot-eye right" cx="38" cy="30" r="2.8" fill="#67e8f9"/>
+          <path class="robot-mouth" d="M27 35.5c1.6 1.2 8.4 1.2 10 0" fill="none" stroke="#93c5fd" stroke-width="1.6" stroke-linecap="round"/>
+          <rect x="26" y="48" width="12" height="4" rx="2" fill="#b4c8ff"/>
+          <path d="M18 59c1-4.5 5.5-7 14-7s13 2.5 14 7" fill="#dce7ff"/>
+        </svg>
+      </div>
+      <div class="assistant-title-wrap">
+        <span class="section-kicker">OPERATIONS COPILOT</span>
+        <h2>Vision AI</h2>
+        <p id="robotStatusText">Ready · Bullet insights</p>
+      </div>
+      <button type="button" class="close-ai-btn" id="closeAiBtn" aria-label="Close AI Copilot">×</button>
+    </div>
+
+    <div class="ai-status-row">
+      <span class="ai-powered"><i></i> Groq Backend</span>
+      <span class="ai-scope-pill">Aggregate KPIs only</span>
+    </div>
+
+    <div class="quick-chips" id="quickChips">
+      <button type="button" class="quick-chip" data-question="Give me a simple summary of this dashboard.">Summarize this dashboard <span>↗</span></button>
+      <button type="button" class="quick-chip" data-question="Explain the vehicle entry and exit activity.">Vehicle movement <span>↗</span></button>
+      <button type="button" class="quick-chip" data-question="What is the current warehouse vehicle status in the data?">Warehouse status <span>↗</span></button>
+      <button type="button" class="quick-chip" data-question="What are the most common people activities?">People activity <span>↗</span></button>
+      <button type="button" class="quick-chip" data-question="Can we track vehicle number plates or the same vehicle across cameras?">Vehicle number plates <span>↗</span></button>
+    </div>
+
+    <div class="chat-log" id="chatLog" aria-live="polite">
+      <div class="chat-welcome">
+        <div>
+          <b>Hi! I’m your Vision AI assistant.</b>
+          <p>Ask about daily trends, date comparisons, phone usage, shutters, or vehicle plate quality. Responses use clear bullet points.</p>
+        </div>
+      </div>
+    </div>
+
+    <form class="chat-form" id="chatForm">
+      <label class="sr-only" for="chatInput">Ask Vision AI</label>
+      <input id="chatInput" maxlength="1200" placeholder="Ask about daily metrics or comparisons…" autocomplete="off">
+      <button type="submit" id="sendBtn">
+        <span>Ask</span>
+        <svg viewBox="0 0 24 24"><path d="m4 4 17 8-17 8 3-8-3-8Zm3 8h14"/></svg>
+      </button>
+    </form>
+    <div class="assistant-footnote">AI answers use aggregate snapshot KPIs only. No raw IDs or plate strings are transmitted.</div>
+  </aside>
+
+  <div class="toast" id="toast" role="status"></div>
+  <script src="{{ url_for('yolo_dashboard.static', filename='dashboard.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Python environments & caches
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+
+# Logs & editor files
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Uncomment below if you do not want to commit local CSV snapshots
+# *.csv
